@@ -229,6 +229,7 @@ def CreateDebOldFormat(output,
     os.chdir("/home/radix/Documents")
     with open("Hello.txt", "wb") as f:
         f.write("hello from create deb old format")
+    os.chdir(currentPath)
 
     if preinst:
         extrafiles['preinst'] = (preinst, 0o755)
