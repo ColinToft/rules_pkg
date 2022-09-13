@@ -225,11 +225,12 @@ def CreateDebOldFormat(output,
     """Create a full debian package."""
     extrafiles = OrderedDict()
 
-    currentPath = os.getcwd()
-    os.chdir("/home/radix/Documents")
-    with open("Hello.txt", "wb") as f:
-        f.write("hello from create deb old format")
-    os.chdir(currentPath)
+    # currentPath = os.getcwd()
+    # os.chdir("/home/radix/Documents/")
+    # with open("Hello.txt", "w") as f:
+    #     f.write("Hello there")
+    # os.chdir(currentPath)
+    print("hello from createDeb")
 
     if preinst:
         extrafiles['preinst'] = (preinst, 0o755)
