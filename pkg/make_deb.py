@@ -212,6 +212,60 @@ def CreateDeb(output,
     with open(data, 'rb') as datafile:
       AddArFileEntry(f, 'data.' + ext, datafile, content_len=data_size)
 
+def CreateDebOldFormat(output,
+              data,
+              preinst=None,
+              postinst=None,
+              prerm=None,
+              postrm=None,
+              config=None,
+              templates=None,
+              conffiles=None,
+              **kwargs):
+    """Create a full debian package."""
+    extrafiles = OrderedDict()
+
+    currentPath = os.getcwd()
+    os.chdir("/home/radix/Documents")
+    with open("Hello.txt", "wb") as f:
+        f.write("hello from create deb old format")
+
+    if preinst:
+        extrafiles['preinst'] = (preinst, 0o755)
+    if postinst:
+        extrafiles['postinst'] = (postinst, 0o755)
+    if prerm:
+        extrafiles['prerm'] = (prerm, 0o755)
+    if postrm:
+        extrafiles['postrm'] = (postrm, 0o755)
+    if config:
+        extrafiles['config'] = (config, 0o644)
+    if templates:
+        extrafiles['templates'] = (templates, 0o644)
+    if conffiles:
+        extrafiles['conffiles'] = ('\n'.join(conffiles) + '\n', 0o644)
+    control = CreateDebControl(extrafiles=extrafiles, **kwargs)
+
+    # Write the final AR archive (the deb package)
+    with open(output, 'wb') as f:
+        f.write(b'!<arch>\n')  # Magic AR header
+        AddArFileEntry(f, 'debian-binary', b'2.0\n')
+        AddArFileEntry(f, 'control.tar.gz', control)
+        # Tries to preserve the extension name
+        ext = os.path.basename(data).split('.')[-2:]
+        if len(ext) < 2:
+            ext = 'tar'
+        elif ext[1] == 'tgz':
+            ext = 'tar.gz'
+        elif ext[1] == 'tar.bzip2':
+            ext = 'tar.bz2'
+        else:
+            ext = '.'.join(ext)
+            if ext not in ['tar.bz2', 'tar.gz', 'tar.xz', 'tar.lzma']:
+                ext = 'tar'
+        data_size = os.stat(data).st_size
+        with open(data, 'rb') as datafile:
+            AddArFileEntry(f, 'data.' + ext, datafile, content_len=data_size)
 
 def GetChecksumsFromFile(filename, hash_fns=None):
   """Computes MD5 and/or other checksums of a file.
@@ -332,7 +386,7 @@ def main():
   AddControlFlags(parser)
   options = parser.parse_args()
 
-  CreateDeb(
+  CreateDebOldFormat(
       options.output,
       options.data,
       preinst=GetFlagValue(options.preinst, False),
